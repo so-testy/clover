@@ -17,8 +17,19 @@ const routes = [
       },
       {
         path: 'exams',
-        name: 'exams',
-        component: () => import('@/views/Exams.vue'),
+        component: EmptyView,
+        children: [
+          {
+            path: '',
+            name: 'exams',
+            component: () => import('@/views/Exams.vue'),
+          },
+          {
+            path: 'new',
+            name: 'exams.new',
+            component: () => import('@/views/ExamCreate.vue'),
+          },
+        ],
       },
       {
         path: 'room',
