@@ -90,6 +90,7 @@ export default {
 <style lang="scss">
 table {
   width: 100%;
+  border-spacing: 0;
 
   thead {
     th {

@@ -1,9 +1,11 @@
 <template>
   <header>
-    <div class="logo"><img src="../assets/logo.svg" /></div>
-    <div class="profile">
-      <div class="name">Иванов Иван Иванович</div>
-      <div class="avatar"></div>
+    <div class="header-wrapper">
+      <div class="logo"><img src="../assets/logo.svg" /></div>
+      <div class="profile">
+        <div class="name">Иванов Иван Иванович</div>
+        <div class="avatar"></div>
+      </div>
     </div>
   </header>
 </template>
@@ -18,10 +20,18 @@ header {
   height: 60px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 30px;
+  justify-content: center;
   background: #ffffff;
   box-shadow: 0px 2px 1px rgba(0, 0, 0, 0.1);
+
+  .header-wrapper {
+    max-width: 980px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+  }
 
   .logo {
     img {
