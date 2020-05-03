@@ -1,7 +1,7 @@
 <template>
   <main-layout title="Экзамены">
     <template #createButton>
-      <router-link is="button" :to="{ name: 'exams.new' }">Создать</router-link>
+      <router-link tag="button" :to="{ name: 'exams.new' }">Создать</router-link>
     </template>
     <template #filters>
       <div class="filter">

@@ -1,6 +1,5 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
-import Home from '../views/Home.vue';
 import EmptyView from '@/components/EmptyView';
 
 Vue.use(VueRouter);
@@ -18,8 +17,19 @@ const routes = [
       },
       {
         path: 'exams',
-        name: 'exams',
-        component: () => import('@/views/Exams.vue'),
+        component: EmptyView,
+        children: [
+          {
+            path: '',
+            name: 'exams',
+            component: () => import('@/views/Exams.vue'),
+          },
+          {
+            path: 'new',
+            name: 'exams.new',
+            component: () => import('@/views/ExamCreate.vue'),
+          },
+        ],
       },
     ],
   },

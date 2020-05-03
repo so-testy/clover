@@ -48,4 +48,20 @@ button {
     background: #445581;
   }
 }
+
+input[type='text'],
+input[type='date'],
+textarea {
+  height: 37px;
+  background: #ffffff;
+  border: 1px solid #9796ab;
+  border-radius: 5px;
+  padding: 8px;
+  font-family: Gilroy, Roboto, Arial, sans-serif;
+  font-size: 16px;
+}
+
+textarea {
+  height: auto;
+}
 </style>
