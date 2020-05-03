@@ -1,30 +1,36 @@
 import Vue from 'vue'
-import VueRouter from 'vue-router'
-import Home from '../views/Home.vue'
-import Room from '../views/Room.vue'
+import VueRouter from 'vue-router';
+import EmptyView from '@/components/EmptyView';
 
-Vue.use(VueRouter)
+Vue.use(VueRouter);
 
-  const routes = [
+const routes = [
   {
     path: '/',
-    name: 'Home',
-    component: Home
+    component: EmptyView,
+    children: [
+      {
+        path: '',
+        name: 'home',
+        redirect: 'exams',
+        component: () => import('@/views/Home.vue'),
+      },
+      {
+        path: 'exams',
+        name: 'exams',
+        component: () => import('@/views/Exams.vue'),
+      },
+      {
+        path: 'room',
+        name: 'room',
+        component: () => import('@/views/Room.vue'),
+      },
+    ],
   },
-  {
-    path: '/about',
-    name: 'About',
-    component: () => import('../views/About.vue')
-  }, 
-  {
-    path: '/room',
-    name: 'Room',
-    component: Room
-  }
-]
+];
 
 const router = new VueRouter({
-  routes
-})
+  routes,
+});
 
-export default router
+export default router;
