@@ -7,119 +7,133 @@
         workingMode: exam.queue && exam.queue.working.findIndex((u) => u.id === currUser.id) !== -1,
       }"
     >
-      <div v-if="exam.started && exam.studentId === currUser.id && currUser.type === 'student'">
-        <div class="video student"></div>
+      <transition-group name="slide">
+        <div v-if="exam.started && exam.studentId === currUser.id && currUser.type === 'student'" key="1">
+          <div class="video student"></div>
 
-        <div class="questions">
-          <div class="title">Билет №10 "12345678901234567890"</div>
-          <div class="question">
-            <div>Вопрос №1</div>
-            Почему у мухи три слона?
-          </div>
-          <div class="question">
-            <div>Вопрос №2</div>
-            Почему у слона три мухи?
-          </div>
-        </div>
-      </div>
-
-      <div v-else-if="exam.started && exam.studentId !== null && currUser.type === 'teacher'">
-        <div class="video teacher">
-          <button @click="$socket.emit('examPassed', exam.studentId)">Подтвердить сдачу</button>
-        </div>
-
-        <div class="questions">
-          <div class="title">Билет №10 "12345678901234567890"</div>
-          <div class="question">
-            <div>Вопрос №1</div>
-            Почему у мухи три слона?
-          </div>
-          <div class="question">
-            <div>Вопрос №2</div>
-            Почему у слона три мухи?
+          <div class="questions">
+            <div class="title">Билет №10 "12345678901234567890"</div>
+            <div class="question">
+              <div>Вопрос №1</div>
+              Почему у мухи три слона?
+            </div>
+            <div class="question">
+              <div>Вопрос №2</div>
+              Почему у слона три мухи?
+            </div>
           </div>
         </div>
-      </div>
-
-      <div v-else-if="exam.started && exam.queue.working.findIndex((u) => u.id === currUser.id) !== -1 && currUser.type === 'student'">
-        <div class="questions">
-          <div class="title">Билет №10 "12345678901234567890"</div>
-          <div class="question">
-            <div>Вопрос №1</div>
-            Почему у мухи три слона?
+        <div v-if="exam.started && exam.studentId !== null && currUser.type === 'teacher'" key="2">
+          <div class="video teacher">
+            <button @click="$socket.emit('examPassed', exam.studentId)">Подтвердить сдачу</button>
           </div>
-          <div class="question">
-            <div>Вопрос №2</div>
-            Почему у слона три мухи?
+
+          <div class="questions">
+            <div class="title">Билет №10 "12345678901234567890"</div>
+            <div class="question">
+              <div>Вопрос №1</div>
+              Почему у мухи три слона?
+            </div>
+            <div class="question">
+              <div>Вопрос №2</div>
+              Почему у слона три мухи?
+            </div>
           </div>
         </div>
+        <div v-if="exam.started && exam.queue.working.findIndex((u) => u.id === currUser.id) !== -1 && currUser.type === 'student'" key="3">
+          <div class="questions">
+            <div class="title">Билет №10 "12345678901234567890"</div>
+            <div class="question">
+              <div>Вопрос №1</div>
+              Почему у мухи три слона?
+            </div>
+            <div class="question">
+              <div>Вопрос №2</div>
+              Почему у слона три мухи?
+            </div>
+          </div>
 
-        ОСТАЛОСЬ 12 СЕКУНД
+          <div class="bigtimer">
+            Осталось
+            <span class="time">{{ new Intl.DateTimeFormat('ru', { minute: '2-digit', second: '2-digit' }).format(timer) }}</span> минуты
+          </div>
 
-        <button @click="$socket.emit('userReady')">Я ГОТОВ</button>
-      </div>
-      <template v-else>
-        <div class="sidebar">
-          <div class="active">
-            <div class="title">Готовы к сдаче</div>
-            <div class="list" v-if="users.ready.length">
-              <div class="list__item" v-for="user in users.ready" :key="user.id">
-                {{ user.name }}
-                <button v-if="currUser.type === 'teacher'" @click="$socket.emit('startStudentExam', { id: user.id })">Начать защиту</button>
+          <button @click="$socket.emit('userReady')" class="student-ready">Завершить подготовку</button>
+        </div>
+        <span
+          v-if="
+            exam.studentId === null && exam.studentId !== currUser.id && exam.queue.working.findIndex((u) => u.id === currUser.id) === -1
+          "
+          style="display:flex;"
+          key="4"
+        >
+          <div class="sidebar" style="width:350px;">
+            <div class="active">
+              <div class="title">Готовы к сдаче</div>
+              <div class="list" v-if="users.ready.length">
+                <div class="list__item start-student-exam" v-for="user in users.ready" :key="user.id">
+                  {{ user.name }}
+                  <a v-if="currUser.type === 'teacher'" @click="$socket.emit('startStudentExam', { id: user.id })">Начать защиту</a>
+                </div>
+              </div>
+              <div class="list" v-else>
+                Пока тут никого нет
               </div>
             </div>
-            <div class="list" v-else>
-              Пока тут никого нет
-            </div>
-          </div>
-          <div class="ready">
-            <div class="title">Готовятся</div>
-            <div class="list" v-if="users.working.length">
-              <div class="list__item" v-for="user in users.working" :key="user.id" @click="$socket.emit('userReady')">
-                {{ user.name }}
+            <div class="ready">
+              <div class="title">Готовятся</div>
+              <div class="list" v-if="users.working.length">
+                <div class="list__item" v-for="user in users.working" :key="user.id" @click="$socket.emit('userReady')">
+                  {{ user.name }}
+                  <div class="timer">
+                    <img src="../assets/timer.svg" class="timericon" />{{
+                      new Intl.DateTimeFormat('ru', { minute: '2-digit', second: '2-digit' }).format(timer)
+                    }}
+                  </div>
+                </div>
+              </div>
+              <div class="list" v-else>
+                Пока тут никого нет
               </div>
             </div>
-            <div class="list" v-else>
-              Пока тут никого нет
-            </div>
-          </div>
-          <div class="queue">
-            <div class="title">Очередь</div>
-            <div class="list" v-if="users.waiting.length">
-              <div class="list__item" v-for="user in users.waiting" :key="user.id">
-                {{ user.name }}
+            <div class="queue">
+              <div class="title">Очередь</div>
+              <div class="list" v-if="users.waiting.length">
+                <div class="list__item" v-for="user in users.waiting" :key="user.id">
+                  {{ user.name }}
+                </div>
+              </div>
+              <div class="list" v-else>
+                Пока тут никого нет
               </div>
             </div>
-            <div class="list" v-else>
-              Пока тут никого нет
-            </div>
+            <button v-if="currUser.type === 'teacher' && !exam.started" @click="startExam()" style="width: 100%;">
+              Начать экзамен
+            </button>
           </div>
-          <button v-if="currUser.type === 'teacher' && !exam.started" @click="$socket.emit('startExam')" style="width: 100%;">
-            Начать экзамен
-          </button>
-        </div>
-        <div class="chat">
-          <div class="title">Общий чат</div>
+          <div class="chat">
+            <div class="title">Общий чат</div>
 
-          <Chat
-            v-if="visible"
-            :participants="participants"
-            :myself="currUser"
-            :messages="messages"
-            :chat-title="chatTitle"
-            :placeholder="placeholder"
-            :colors="colors"
-            :border-style="borderStyle"
-            :submit-icon-size="submitIconSize"
-            :async-mode="asyncMode"
-            :scroll-bottom="scrollBottom"
-            :display-header="false"
-            :send-images="false"
-            :profile-picture-config="profilePictureConfig"
-            @onMessageSubmit="onMessageSubmit"
-          />
-        </div>
-      </template>
+            <Chat
+              v-if="visible"
+              :participants="participants"
+              :myself="currUser"
+              :messages="messages"
+              :chat-title="chatTitle"
+              :placeholder="placeholder"
+              :colors="colors"
+              :border-style="borderStyle"
+              :submit-icon-size="submitIconSize"
+              :async-mode="asyncMode"
+              :scroll-bottom="scrollBottom"
+              :display-header="false"
+              :send-images="false"
+              :profile-picture-config="profilePictureConfig"
+              @onMessageSubmit="onMessageSubmit"
+            />
+          </div>
+        </span>
+      </transition-group>
     </main>
   </div>
 </template>
@@ -140,6 +154,7 @@ export default {
   },
   data() {
     return {
+      timer: 0,
       profilePictureConfig: {
         others: false,
         myself: false,
@@ -196,6 +211,16 @@ export default {
     });
 
     this.sockets.listener.subscribe('examData', (exam) => {
+      if (exam.started === true && this.timer === 0) {
+        const date = new Date(exam.startTime);
+        const date1 = new Date();
+        date.setMinutes(date.getMinutes() + 25);
+        this.timer = new Date(date - date1);
+
+        setInterval((e) => {
+          this.timer = new Date(this.timer.setSeconds(this.timer.getSeconds() - 1));
+        }, 1000);
+      }
       this.exam = exam;
       this.users = exam.queue;
     });
@@ -209,14 +234,22 @@ export default {
       this.messages = messages.map((message) => ({ ...message, myself: message.participantId === this.currUser.id }));
     });
 
-    console.log(this.type);
+    const capitalize = (str) => str[0].toUpperCase() + str.substr(1);
 
-    this.$socket.emit('createUser', { type: this.type });
+    fetch('https://randomuser.me/api/')
+      .then((data) => data.json())
+      .then((data) => data.results[0])
+      .then(({ name: { first, last } }) => {
+        this.$socket.emit('createUser', { type: this.type, name: `${capitalize(first)} ${capitalize(last)}` });
+      });
   },
   methods: {
     onMessageSubmit: function(message) {
-      if (/начать/imu.test(message.content)) this.$socket.emit('startExam');
+      if (/начать/imu.test(message.content)) this.startExam();
       this.$socket.emit('message', message);
+    },
+    startExam() {
+      this.$socket.emit('startExam');
     },
   },
 };
@@ -231,8 +264,9 @@ export default {
 
   main {
     text-align: left;
-    display: grid;
-    grid-template-columns: 260px auto;
+    // display: grid;
+    // display: flex;
+    // grid-template-columns: 300px auto;
     max-width: 980px;
     margin: 0px auto;
 
@@ -256,6 +290,32 @@ export default {
             padding: 6px 0;
             font-size: 1em;
             color: #4b6199;
+            display: flex;
+            align-items: center;
+
+            &.start-student-exam {
+              align-items: flex-start;
+              flex-direction: column;
+
+              a {
+                font-weight: 600;
+                margin-top: 2px;
+                cursor: pointer;
+                text-decoration: none;
+              }
+            }
+
+            .timer {
+              margin-left: 10px;
+              font-size: 1.05em;
+              font-weight: 600;
+              display: flex;
+
+              .timericon {
+                margin-right: 5px;
+                width: 1em;
+              }
+            }
           }
         }
       }
@@ -398,5 +458,53 @@ export default {
 .videoMode,
 .workingMode {
   grid-template-columns: 1fr !important;
+}
+.quick-chat-container .container-message-manager {
+  box-shadow: 0 -2px 6px 0 hsla(0, 0%, 72.9%, 0.17);
+  padding: 0 10px;
+  height: 40px;
+}
+
+.quick-chat-container .container-message-manager .message-text-box {
+  height: 19px;
+}
+
+.bigtimer {
+  margin-top: 30px;
+  font-size: 1.6em;
+  text-align: center;
+
+  .time {
+    font-weight: 600;
+    font-size: 1.1em;
+  }
+}
+
+.student-ready {
+  margin-left: 50%;
+  transform: translateX(-50%);
+  margin-top: 20px;
+  font-size: 1.2em;
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.5s;
+  transform-origin: top center;
+}
+.slide-item {
+  transition: all 1s;
+  display: inline-block;
+  margin-right: 10px;
+}
+.slide-enter, .slide-leave-to
+/* .slide-leave-active до версии 2.1.8 */ {
+  opacity: 0;
+  transform: translateY(30px);
+}
+.slide-leave-active {
+  position: absolute;
+  right: 0;
+  left: 0;
 }
 </style>
