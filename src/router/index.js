@@ -1,4 +1,4 @@
-import Vue from 'vue'
+import Vue from 'vue';
 import VueRouter from 'vue-router';
 import EmptyView from '@/components/EmptyView';
 
@@ -34,7 +34,8 @@ const routes = [
       {
         path: 'room',
         name: 'room',
-        component: () => import('@/views/Room.vue'),
+        props: (route) => ({ type: route.query.type }),
+        component: () => import('@/views/UserRoom.vue'),
       },
     ],
   },
