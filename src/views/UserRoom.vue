@@ -1,22 +1,57 @@
 <template>
   <div class="room">
     <main-header></main-header>
-    <main>
+    <main
+      :class="{
+        videoMode: exam.studentId !== null && (exam.studentId === currUser.id || currUser.type === 'teacher'),
+        workingMode: exam.queue && exam.queue.working.findIndex((u) => u.id === currUser.id) !== -1,
+      }"
+    >
       <div v-if="exam.started && exam.studentId === currUser.id && currUser.type === 'student'">
-        <div class="video">VIDEO</div>
+        <div class="video student"></div>
+
+        <div class="questions">
+          <div class="title">Билет №10 "12345678901234567890"</div>
+          <div class="question">
+            <div>Вопрос №1</div>
+            Почему у мухи три слона?
+          </div>
+          <div class="question">
+            <div>Вопрос №2</div>
+            Почему у слона три мухи?
+          </div>
+        </div>
       </div>
 
       <div v-else-if="exam.started && exam.studentId !== null && currUser.type === 'teacher'">
-        <div class="video">VIDEO</div>
+        <div class="video teacher">
+          <button @click="$socket.emit('examPassed', exam.studentId)">Подтвердить сдачу</button>
+        </div>
 
-        <button @click="$socket.emit('examPassed', exam.studentId)">СДАНО</button>
+        <div class="questions">
+          <div class="title">Билет №10 "12345678901234567890"</div>
+          <div class="question">
+            <div>Вопрос №1</div>
+            Почему у мухи три слона?
+          </div>
+          <div class="question">
+            <div>Вопрос №2</div>
+            Почему у слона три мухи?
+          </div>
+        </div>
       </div>
 
       <div v-else-if="exam.started && exam.queue.working.findIndex((u) => u.id === currUser.id) !== -1 && currUser.type === 'student'">
         <div class="questions">
           <div class="title">Билет №10 "12345678901234567890"</div>
-          <div class="question">Вопрос №1. Почему у мухи три слона?</div>
-          <div class="question">Вопрос №2. Почему у слона три мухи?</div>
+          <div class="question">
+            <div>Вопрос №1</div>
+            Почему у мухи три слона?
+          </div>
+          <div class="question">
+            <div>Вопрос №2</div>
+            Почему у слона три мухи?
+          </div>
         </div>
 
         ОСТАЛОСЬ 12 СЕКУНД
@@ -27,29 +62,41 @@
         <div class="sidebar">
           <div class="active">
             <div class="title">Готовы к сдаче</div>
-            <div class="list">
+            <div class="list" v-if="users.ready.length">
               <div class="list__item" v-for="user in users.ready" :key="user.id">
                 {{ user.name }}
                 <button v-if="currUser.type === 'teacher'" @click="$socket.emit('startStudentExam', { id: user.id })">Начать защиту</button>
               </div>
             </div>
+            <div class="list" v-else>
+              Пока тут никого нет
+            </div>
           </div>
           <div class="ready">
             <div class="title">Готовятся</div>
-            <div class="list">
+            <div class="list" v-if="users.working.length">
               <div class="list__item" v-for="user in users.working" :key="user.id" @click="$socket.emit('userReady')">
                 {{ user.name }}
               </div>
             </div>
+            <div class="list" v-else>
+              Пока тут никого нет
+            </div>
           </div>
           <div class="queue">
             <div class="title">Очередь</div>
-            <div class="list">
+            <div class="list" v-if="users.waiting.length">
               <div class="list__item" v-for="user in users.waiting" :key="user.id">
                 {{ user.name }}
               </div>
             </div>
+            <div class="list" v-else>
+              Пока тут никого нет
+            </div>
           </div>
+          <button v-if="currUser.type === 'teacher' && !exam.started" @click="$socket.emit('startExam')" style="width: 100%;">
+            Начать экзамен
+          </button>
         </div>
         <div class="chat">
           <div class="title">Общий чат</div>
@@ -72,7 +119,6 @@
             @onMessageSubmit="onMessageSubmit"
           />
         </div>
-        <button v-if="currUser.type === 'teacher' && !exam.started" @click="$socket.emit('startExam')">Начать экзамен</button>
       </template>
     </main>
   </div>
@@ -134,7 +180,11 @@ export default {
       },
       displayHeader: true,
       messages: [],
-      users: [],
+      users: {
+        ready: [],
+        working: [],
+        waiting: [],
+      },
       exam: {},
       participants: [],
       currUser: {},
@@ -243,6 +293,8 @@ export default {
       position: relative;
       margin-top: 20px;
       width: 100%;
+      height: 500px;
+      padding-right: 20px;
 
       .title {
         font-size: 1.2em;
@@ -285,5 +337,66 @@ export default {
       }
     }
   }
+}
+
+.video {
+  margin: 20px auto;
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  width: calc(100% - 60px);
+  height: 400px;
+  background: rgba(0, 0, 0, 0.6);
+  position: relative;
+  background-size: cover;
+  background-position-y: 62%;
+
+  &.teacher {
+    background: url(../assets/student.png);
+    background-size: cover;
+    background-position-y: 62%;
+  }
+
+  &.student {
+    background: url(../assets/teacher.png);
+    background-size: cover;
+    background-position-y: 62%;
+  }
+
+  button {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ccc;
+    color: black;
+  }
+}
+
+.questions {
+  margin: 20px auto;
+  border-radius: 10px;
+
+  // padding: 20px;
+  // border: 1px solid #fafafa;
+  width: calc(100% - 60px);
+
+  .title {
+    font-weight: 600;
+    font-size: 1.2em;
+    margin-bottom: 14px;
+  }
+
+  .question {
+    margin-bottom: 14px;
+    div {
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+  }
+}
+
+.videoMode,
+.workingMode {
+  grid-template-columns: 1fr !important;
 }
 </style>
